@@ -129,6 +129,7 @@ class DoctrineContainer
             'eventSubscribers'   => array(),
             'configurationClass' => 'Doctrine\DBAL\Configuration',
             'sqlLoggerClass'    => null,
+            'type'				=> array(),
             'parameters'          => array(
                 'wrapperClass'       => null,
                 'driver'              => 'pdo_mysql',
@@ -231,6 +232,7 @@ class DoctrineContainer
             'queryCache'              => $this->defaultCacheInstance,
             'resultCache'             => $this->defaultCacheInstance,
             'metadataCache'           => $this->defaultCacheInstance,
+            'mappings'				  => array(),
             'metadataDrivers'         => array(),
             'DQLFunctions'            => array(
                 'numeric'             => array(),
@@ -383,6 +385,11 @@ class DoctrineContainer
             $sqlLoggerClass = $config['sqlLoggerClass'];
             $configuration->setSQLLogger(new $sqlLoggerClass());
         }
+        
+        // Custom type configuration
+        foreach($config['type'] as $key => $value){
+            \Doctrine\DBAL\Types\Type::addType($key, $value);
+        }        
 
         return $configuration;
     }
@@ -526,6 +533,10 @@ class DoctrineContainer
 
         foreach ($dqlFunctions['string'] as $name => $className) {
             $configuration->addCustomStringFunction($name, $className);
+        }
+
+        foreach($config['mappings'] as $key => $value){
+            $this->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping($key, $value);
         }
 
         return $configuration;
